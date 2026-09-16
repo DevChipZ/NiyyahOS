@@ -5,13 +5,11 @@ const API_GEO_BASE = 'https://api.aladhan.com/v1/timings';
 
 export const useAppLogic = () => {
   const [location, setLocation] = useState({ lat: null, lng: null, city: '' });
-  const [method, setMethod] = useState(() => localStorage.getItem('niyyah_method') || '3'); // 3 = MWL default
   const [prayers, setPrayers] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [locationDenied, setLocationDenied] = useState(false);
 
-  // 1. Get Location on mount
   useEffect(() => {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -30,7 +28,6 @@ export const useAppLogic = () => {
     }
   }, []);
 
-  // 2. Fetch Prayers when location or method changes
   useEffect(() => {
     const fetchPrayers = async () => {
       if (!location.lat && !location.city) return;
@@ -38,13 +35,14 @@ export const useAppLogic = () => {
       setLoading(true);
       setError(null);
       
-      const dateStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-'); // DD-MM-YYYY
+      const dateStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
       let url = '';
 
+      // Method parameter is set to 2 silently as a standard default
       if (location.lat) {
-        url = `${API_GEO_BASE}/${dateStr}?latitude=${location.lat}&longitude=${location.lng}&method=${method}`;
+        url = `${API_GEO_BASE}/${dateStr}?latitude=${location.lat}&longitude=${location.lng}&method=2`;
       } else if (location.city) {
-        url = `${API_BASE}/${dateStr}?city=${location.city}&country=&method=${method}`;
+        url = `${API_BASE}/${dateStr}?city=${location.city}&country=&method=2`;
       }
 
       try {
@@ -63,8 +61,7 @@ export const useAppLogic = () => {
     };
 
     fetchPrayers();
-    localStorage.setItem('niyyah_method', method);
-  }, [location, method]);
+  }, [location]);
 
-  return { location, setLocation, method, setMethod, prayers, loading, error, locationDenied };
+  return { location, setLocation, prayers, loading, error, locationDenied };
 };
